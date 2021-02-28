@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/dir.hpp
+list
+-
+node.hpp
+../include/node.hpp
+file.hpp
+../include/file.hpp
+
+../include/dummy.hpp
+node.hpp
+../include/node.hpp
+
+../include/file.hpp
+vector
+-
+node.hpp
+../include/node.hpp
+
+../include/node.hpp
+string
+-
+memory
+-
+functional
+-
+
+D:/Projects/ooptreevfs/src/dir.cpp
+dir.hpp
+D:/Projects/ooptreevfs/src/dir.hpp
+file.hpp
+D:/Projects/ooptreevfs/src/file.hpp
+dummy.hpp
+D:/Projects/ooptreevfs/src/dummy.hpp
+iostream
+-
+algorithm
+-
+
