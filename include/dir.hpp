@@ -16,9 +16,13 @@ public:
     void AddDirRecursive(std::string fullname);
     void AddFileRecursive(std::string fullname);
     void RemoveByName(std::string name);
+    void RemoveByNameRecursive(std::string fullname);
     SNode GetNodeByName(std::string name);
+    SNode GetNodeByNameRecursive(std::string fullname);
     SDir  GetDirByName(std::string name);
+    SDir  GetDirByNameRecursive(std::string fullname);
     SFile GeFileByName(std::string name);
+    SFile GeFileByNameRecursive(std::string fullname);
     bool IsNodeExist(std::string name);
     bool IsNodeExist(SNode node);
     void PrintContent();

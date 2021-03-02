@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <time.h>
 
 #include "microtar.h"
 
@@ -240,7 +241,6 @@ int mtar_next(mtar_t *tar) {
   return mtar_seek(tar, tar->pos + n);
 }
 
-
 int mtar_find(mtar_t *tar, const char *name, mtar_header_t *h) {
   int err;
   mtar_header_t header;
@@ -337,6 +337,7 @@ int mtar_write_file_header(mtar_t *tar, const char *name, unsigned size) {
   h.size = size;
   h.type = MTAR_TREG;
   h.mode = 0664;
+  h.mtime = time(NULL);
   /* Write header */
   return mtar_write_header(tar, &h);
 }
@@ -349,6 +350,7 @@ int mtar_write_dir_header(mtar_t *tar, const char *name) {
   strcpy(h.name, name);
   h.type = MTAR_TDIR;
   h.mode = 0775;
+  h.mtime = time(NULL);
   /* Write header */
   return mtar_write_header(tar, &h);
 }

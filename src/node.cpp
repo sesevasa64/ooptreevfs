@@ -1,9 +1,10 @@
 #include "node.hpp"
 #include "dir.hpp"
 #include "dummy.hpp"
+#include <iostream>
 
 Node::Node(std::string name, Dir *parent, callback update) 
-: name(name), parent(nullptr) {
+: name(name), parent(nullptr), update(dummy) {
     SetUpdate(update);
     SetParent(parent);
 }
@@ -14,13 +15,14 @@ void Node::SetParent(Dir *parent) {
     }
     SNode node = shared_from_this();
     if (this->parent) {
-        parent->Remove(node);
+        this->parent->Remove(node);
     }
     this->parent = parent;
     if (parent && !parent->IsNodeExist(node)) {
-        parent->Add(SNode(node));
+        parent->Add(node);
     }
-    update(node);
+    // Мб вообще удалить
+    //update(node);
 }
 
 Dir* Node::GetParent() {
@@ -46,8 +48,5 @@ std::string Node::GetFullName() {
 void Node::SetUpdate(callback update) {
     if (update) {
         this->update = update;
-    }
-    else {
-        this->update = dummy;
     }
 }

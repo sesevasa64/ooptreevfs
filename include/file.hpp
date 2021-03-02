@@ -12,6 +12,7 @@ public:
     void Push(std::string str);
     void Remove(size_t pos);
     size_t Size() override;
+    std::string toString();
     friend std::ostream& operator<<(std::ostream& out, const File &file);
 private:
     void CheckPos(size_t pos);

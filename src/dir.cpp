@@ -22,9 +22,12 @@ void Dir::Add(SNode node) {
 
 void Dir::Remove(SNode node) {
     auto it = std::find(nodes.begin(), nodes.end(), node);
+    if (it == nodes.end()) {
+        return;
+    }
     nodes.erase(it);
-    node->SetParent(nullptr);
     remove(node);
+    node->SetParent(nullptr);
 }
 
 size_t Dir::Count() {
@@ -48,7 +51,7 @@ void Dir::AddDirByName(std::string name) {
     SDir node = std::make_shared<Dir>(name);
     Add(node);
     node->SetCreate(create);
-    node->SetUpdate(update);
+    node->SetRemove(remove);
 }
 
 SNode Dir::GetNodeByName(std::string name) {
@@ -68,6 +71,23 @@ SDir Dir::GetDirByName(std::string name) {
 SFile Dir::GeFileByName(std::string name) {
     SNode node = GetNodeByName(name);
     return std::dynamic_pointer_cast<File>(node);
+}
+
+SNode Dir::GetNodeByNameRecursive(std::string fullname) {
+    auto pos = fullname.rfind('/');
+    auto name = fullname.substr(pos + 1);
+    auto dir = ProceedPath(fullname);
+    return dir->GetNodeByName(name);
+}
+
+SDir Dir::GetDirByNameRecursive(std::string fullname) {
+    SNode node = GetNodeByNameRecursive(fullname);
+    return dynamic_pointer_cast<Dir>(node);
+}
+
+SFile Dir::GeFileByNameRecursive(std::string fullname) {
+    SNode node = GetNodeByNameRecursive(fullname);
+    return dynamic_pointer_cast<File>(node);
 }
 
 bool Dir::IsNodeExist(std::string name) {
@@ -128,6 +148,8 @@ SDir Dir::ProceedPath(std::string fullname) {
         }
         SDir dir = make_shared<Dir>(name);
         this->Add(dir);
+        dir->SetCreate(create);
+        dir->SetRemove(remove);
         return dir->ProceedPath(path);
     }
     else {
@@ -147,5 +169,18 @@ void Dir::AddFileRecursive(std::string fullname) {
     auto pos = fullname.rfind('/');
     auto name = fullname.substr(pos + 1);
     auto dir = ProceedPath(fullname);
-    dir->AddDirByName(name);
+    dir->AddFileByName(name);
+}
+
+void Dir::RemoveByNameRecursive(std::string fullname) {
+    auto pos = fullname.rfind('/');
+    auto name = fullname.substr(pos + 1);
+    auto dir = ProceedPath(fullname);
+    auto node = dir->GetNodeByName(name);
+    if (!node) {
+        throw std::invalid_argument(
+            "node with this name dont exist!"
+        );
+    }
+    dir->Remove(node);
 }
