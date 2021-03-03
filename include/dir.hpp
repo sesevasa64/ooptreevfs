@@ -4,6 +4,7 @@
 #include "file.hpp"
 
 using SNodes = std::list<SNode>;
+using SDirIt = SNodes::iterator;
 using SDir = std::shared_ptr<Dir>;
 
 class Dir : public Node {
@@ -29,11 +30,13 @@ public:
     void PrintContentRecursive();
     size_t Count();
     size_t Size() override;
-    void SetCreate(callback create);
-    void SetRemove(callback remove);
-    std::vector<std::string> getAllNamesRecursive();
+    void Create() override;
+    void Remove() override;
+    void Update() override;
+    SDirIt begin() { return nodes.begin(); }
+    SDirIt end() { return nodes.end(); }
+    void SetObserver(IObserver *observer) override;
 private:
     SDir ProceedPath(std::string fullname);
-    callback create, remove;
     SNodes nodes;
 };

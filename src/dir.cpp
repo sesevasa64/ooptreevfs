@@ -1,12 +1,12 @@
 #include "dir.hpp"
 #include "file.hpp"
-#include "dummy.hpp"
+#include "vfs.hpp"
 #include <iostream>
 #include <algorithm>
 using namespace std;
 
 Dir::Dir(std::string name, Dir *parent) 
-: Node(name, parent), create(dummy), remove(dummy) {}
+: Node(name, parent) {}
 
 void Dir::Add(SNode node) {
     if (IsNodeExist(node->GetName())) {
@@ -16,8 +16,8 @@ void Dir::Add(SNode node) {
     if (node->GetParent() != this) {
         node->SetParent(this);
     }
-    node->SetUpdate(update);
-    create(node);
+    node->SetObserver(observer);
+    node->Create();
 }
 
 void Dir::Remove(SNode node) {
@@ -26,7 +26,7 @@ void Dir::Remove(SNode node) {
         return;
     }
     nodes.erase(it);
-    remove(node);
+    node->Remove();
     node->SetParent(nullptr);
 }
 
@@ -50,8 +50,6 @@ void Dir::AddFileByName(std::string name) {
 void Dir::AddDirByName(std::string name) {
     SDir node = std::make_shared<Dir>(name);
     Add(node);
-    node->SetCreate(create);
-    node->SetRemove(remove);
 }
 
 SNode Dir::GetNodeByName(std::string name) {
@@ -119,18 +117,6 @@ void Dir::PrintContentRecursive() {
     }
 }
 
-void Dir::SetCreate(callback create) {
-    if (create) {
-        this->create = create;
-    }
-}
-
-void Dir::SetRemove(callback remove) {
-    if (remove) {
-        this->remove = remove;
-    }
-}
-
 SDir Dir::ProceedPath(std::string fullname) {
     auto pos = fullname.find('/');
     auto name = fullname.substr(0, pos);
@@ -147,9 +133,7 @@ SDir Dir::ProceedPath(std::string fullname) {
             return dir->ProceedPath(path);
         }
         SDir dir = make_shared<Dir>(name);
-        this->Add(dir);
-        dir->SetCreate(create);
-        dir->SetRemove(remove);
+        Add(dir);
         return dir->ProceedPath(path);
     }
     else {
@@ -185,15 +169,30 @@ void Dir::RemoveByNameRecursive(std::string fullname) {
     dir->Remove(node);
 }
 
-vector<string> Dir::getAllNamesRecursive() {
-    vector<string> names;
+void Dir::Create() {
+    observer->Create(this);
     for (auto &node : nodes) {
-        names.push_back(node->GetFullName());
-        auto dir = dynamic_pointer_cast<Dir>(node);
-        if (dir) {
-            auto subnames = dir->getAllNamesRecursive();
-            names.insert(names.end(), subnames.begin(), subnames.end());
-        }
+        node->Create();
     }
-    return names;
+}
+
+void Dir::Remove() {
+    observer->Remove(this);
+    for (auto &node : nodes) {
+        node->Remove();
+    }
+}
+
+void Dir::Update() {
+    observer->Update(this);
+    for (auto &node : nodes) {
+        node->Update();
+    } 
+}
+
+void Dir::SetObserver(IObserver *observer) {
+    Node::SetObserver(observer);
+    for (auto &node : nodes) {
+        node->SetObserver(observer);
+    }
 }

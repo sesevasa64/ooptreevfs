@@ -1,6 +1,7 @@
 #include "file.hpp"
 #include <iostream>
 #include <sstream>
+#include "vfs.hpp"
 
 File::File(std::string name) : Node(name) {}
 
@@ -20,18 +21,18 @@ void File::Insert(size_t pos, std::string str) {
         throw std::invalid_argument("index out of range");
     }
     lines.insert(lines.begin() + pos, str);
-    update(shared_from_this());
+    Update();
 }
 
 void File::Push(std::string str) {
     lines.push_back(str);
-    update(shared_from_this());
+    Update();
 }
 
 void File::Remove(size_t pos) {
     CheckPos(pos);
     lines.erase(lines.begin() + pos);
-    update(shared_from_this());
+    Update();
 }
 
 size_t File::Size() {
@@ -56,4 +57,16 @@ std::ostream& operator<<(std::ostream& out, const File &file) {
         out << file.lines[i] << "\n";
     }
     return out << file.lines[last];
+}
+
+void File::Create() {
+    observer->Create(this);
+}
+
+void File::Remove() {
+    observer->Remove(this);
+}
+
+void File::Update() {
+    observer->Update(this);
 }

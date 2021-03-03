@@ -1,11 +1,14 @@
 #include "node.hpp"
 #include "dir.hpp"
-#include "dummy.hpp"
 #include <iostream>
+#include "vfs.hpp"
 
-Node::Node(std::string name, Dir *parent, callback update) 
-: name(name), parent(nullptr), update(dummy) {
-    SetUpdate(update);
+void IObservable::SetObserver(IObserver *observer) {
+    this->observer = observer;
+}
+
+Node::Node(std::string name, Dir *parent) 
+: name(name), parent(nullptr) {
     SetParent(parent);
 }
 
@@ -31,7 +34,7 @@ Dir* Node::GetParent() {
 
 void Node::SetName(std::string name) {
     this->name = name;
-    update(shared_from_this());
+    Update();
 }
 
 std::string Node::GetName() {
@@ -43,10 +46,4 @@ std::string Node::GetFullName() {
         return parent->GetFullName() + "/" + name;
     }
     return GetName();
-}
-
-void Node::SetUpdate(callback update) {
-    if (update) {
-        this->update = update;
-    }
 }

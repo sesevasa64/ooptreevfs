@@ -42,9 +42,7 @@ void mtar_delete_header(mtar_t *tar, string archiveName, const char *headerName)
 
 Archive::Archive(std::string name) : archiveName(name) {
     root = make_shared<Dir>(string());
-    root->SetCreate(bind(&Archive::onAdd, this, _1));
-    root->SetRemove(bind(&Archive::onRemove, this, _1));
-    root->SetUpdate(bind(&Archive::onUpdate, this, _1));
+    root->SetObserver(this);
     if (isFileExist(name)) {
         //loadArchive();
         mode = "rb+"; 
@@ -90,20 +88,6 @@ void Archive::RemoveRecursive(std::string fullname) {
     root->RemoveByNameRecursive(fullname);
 }
 
-void Archive::writeDir(SDir dir) {
-    mtar_write_dir_header(&tar, dir->GetFullName().c_str() + 1);
-    //auto names = dir->getAllNamesRecursive();
-    //for (auto& name : names) {
-
-    //}
-}
-
-void Archive::writeFile(SFile file) {
-    std::string content = file->toString();
-    mtar_write_file_header(&tar, file->GetFullName().c_str() + 1, content.size());
-    mtar_write_data(&tar, content.c_str(), content.size()); 
-}
-
 void Archive::loadArchive() {
     mtar_header_t header;
     while (true) {
@@ -121,29 +105,51 @@ void Archive::loadArchive() {
     }
 }
 
-void Archive::onAdd(SNode node) {
-    cout << "onAdd = " << node->GetFullName() << endl;
-    SDir dir = dynamic_pointer_cast<Dir>(node);
-    if (dir) {
-        writeDir(dir);
-    }
-    else {
-        SFile file = dynamic_pointer_cast<File>(node);
-        writeFile(file);      
-    }
+void Archive::Create(Dir *dir) {
+    cout << "onCreate = " << dir->GetFullName() << endl;
+    mtar_write_dir_header(&tar, dir->GetFullName().c_str() + 1);
 }
 
-void Archive::onRemove(SNode node) {
+void Archive::Create(File *file) {
+    cout << "onCreate = " << file->GetFullName() << endl;
+    std::string content = file->toString();
+    mtar_write_file_header(&tar, file->GetFullName().c_str() + 1, content.size());
+    mtar_write_data(&tar, content.c_str(), content.size()); 
+}
+
+void Archive::Remove(Dir *dir) {
     mtar_header_t header;
-    string name = node->GetFullName();
+    string name = dir->GetFullName();
     cout << "onRemove = " << name << endl;
     const char *fname = name.c_str();
     mtar_delete_header(&tar, archiveName, fname + 1);
 }
 
-void Archive::onUpdate(SNode node) {
+void Archive::Remove(File *file) {
+    mtar_header_t header;
+    string name = file->GetFullName();
+    cout << "onRemove = " << name << endl;
+    const char *fname = name.c_str();
+    mtar_delete_header(&tar, archiveName, fname + 1);
+}
+
+void Archive::Update(Node *node) {
     string name = node->GetFullName();
     cout << "onUpdate = " << name << endl;
-    onRemove(node);
-    onAdd(node);
+    node->Remove();
+    node->Create();
+}
+
+void Archive::Update(Dir *dir) {
+    string name = dir->GetFullName();
+    cout << "onUpdate = " << name << endl;
+    dir->Remove();
+    dir->Create();
+}
+
+void Archive::Update(File *file) {
+    string name = file->GetFullName();
+    cout << "onUpdate = " << name << endl;
+    file->Remove();
+    file->Create();
 }
