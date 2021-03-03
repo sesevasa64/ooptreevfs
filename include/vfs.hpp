@@ -11,8 +11,12 @@ public:
     SFile GetFile(std::string fullname);
     void RemoveRecursive(std::string fullname);
     SDir getRoot();
+    void Print();
     ~Archive();
 private:
+    void loadArchive();
+    void writeDir(SDir dir);
+    void writeFile(SFile file);
     void onAdd(SNode node);
     void onRemove(SNode node);
     void onUpdate(SNode node);

@@ -184,3 +184,16 @@ void Dir::RemoveByNameRecursive(std::string fullname) {
     }
     dir->Remove(node);
 }
+
+vector<string> Dir::getAllNamesRecursive() {
+    vector<string> names;
+    for (auto &node : nodes) {
+        names.push_back(node->GetFullName());
+        auto dir = dynamic_pointer_cast<Dir>(node);
+        if (dir) {
+            auto subnames = dir->getAllNamesRecursive();
+            names.insert(names.end(), subnames.begin(), subnames.end());
+        }
+    }
+    return names;
+}

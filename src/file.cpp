@@ -44,7 +44,6 @@ size_t File::Size() {
 
 std::string File::toString() {
     std::stringstream ss;
-    std::cout << "size = " << lines.size() << std::endl;
     for (auto &line : lines) {
         ss << line << "\n";
     }

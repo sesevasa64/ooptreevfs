@@ -31,6 +31,7 @@ public:
     size_t Size() override;
     void SetCreate(callback create);
     void SetRemove(callback remove);
+    std::vector<std::string> getAllNamesRecursive();
 private:
     SDir ProceedPath(std::string fullname);
     callback create, remove;
