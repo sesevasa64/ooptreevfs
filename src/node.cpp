@@ -21,6 +21,7 @@ void Node::SetParent(Dir *parent) {
         this->parent->Remove(node);
     }
     this->parent = parent;
+    // Надо попробовать улучшить это 
     if (parent && !parent->IsNodeExist(node)) {
         parent->Add(node);
     }

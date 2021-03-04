@@ -8,6 +8,9 @@ class File : public Node {
 public:
     File(std::string name);
     size_t Size() override;
+    // Заменить на std::string& operator[](size_t pos);
+    // И надо заменить std::string& на прокси объект
+    // чтобы отслеживать состояние линий
     std::string& Read(size_t pos);
     void Insert(size_t pos, std::string str);
     void Push(std::string str);

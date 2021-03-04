@@ -5,8 +5,7 @@
 using namespace std;
 
 void addToArchive(Archive &archive) {
-    archive.AddFile("games/apex/apex.exe");
-    auto file = archive.GetFile("games/apex/apex.exe");
+    auto file = archive.AddFile("games/apex/apex.exe");
     file->Push("first line");
     file->Push("second line");
     //archive.RemoveRecursive("games/apex/apex.exe");
@@ -21,7 +20,7 @@ void loadAndPrintArchive(Archive &archive) {
 
 int main() {
     Archive archive("test.tar");
-    // addToArchive(archive);
+    //addToArchive(archive);
     loadAndPrintArchive(archive);
     cout << 1 << endl;
     return 0;
