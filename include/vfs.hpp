@@ -16,24 +16,41 @@ public:
 class Archive : public IObserver {
 public:
     Archive(std::string name);
-    void AddFile(std::string fullname);
-    void AddDir(std::string fullname);
-    SDir GetDir(std::string fullname);
+    SFile AddFile(std::string fullname);
+    SDir  AddDir(std::string fullname);
+    SDir  GetDir(std::string fullname);
     SFile GetFile(std::string fullname);
     void RemoveRecursive(std::string fullname);
     SDir getRoot();
     void Print();
     ~Archive();
-    void Create(Dir *dir);
-    void Create(File *file);
-    void Remove(Dir *dir);
-    void Remove(File *file);
-    void Update(Node *node);
-    void Update(Dir *dir);
-    void Update(File *file);
+    void Create(Dir *dir) override;
+    void Create(File *file) override;
+    void Remove(Dir *dir) override;
+    void Remove(File *file) override;
+    void Update(Node *node) override;
+    void Update(Dir *dir) override;
+    void Update(File *file) override;
 private:
     void loadArchive();
     std::string archiveName, mode;
     mtar_t tar;
     SDir root;
+};
+
+class Null : public IObserver {
+public:
+    void Create(Dir *dir) override {}
+    void Create(File *file) override {}
+    void Remove(Dir *dir) override {}
+    void Remove(File *file) override {}
+    void Update(Node *node) override {}
+    void Update(Dir *dir) override {}
+    void Update(File *file) override {}
+    static Null& get() {
+        static Null obs;
+        return obs;
+    }
+private:
+    Null() {}
 };

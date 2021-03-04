@@ -12,10 +12,10 @@ public:
     Dir(std::string name, Dir *parent = {});
     void Add(SNode node);
     void Remove(SNode node);
-    void AddFileByName(std::string name);
-    void AddDirByName(std::string name);
-    void AddDirRecursive(std::string fullname);
-    void AddFileRecursive(std::string fullname);
+    SFile AddFileByName(std::string name);
+    SDir  AddDirByName(std::string name);
+    SDir  AddDirRecursive(std::string fullname);
+    SFile AddFileRecursive(std::string fullname);
     void RemoveByName(std::string name);
     void RemoveByNameRecursive(std::string fullname);
     SNode GetNodeByName(std::string name);

@@ -16,6 +16,7 @@ public:
     void Create();
     void Remove();
     void Update();
+    void SetContent(std::string content);
     friend std::ostream& operator<<(std::ostream& out, const File &file);
 private:
     void CheckPos(size_t pos);

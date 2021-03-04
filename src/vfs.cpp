@@ -42,9 +42,8 @@ void mtar_delete_header(mtar_t *tar, string archiveName, const char *headerName)
 
 Archive::Archive(std::string name) : archiveName(name) {
     root = make_shared<Dir>(string());
-    root->SetObserver(this);
-    if (isFileExist(name)) {
-        //loadArchive();
+    bool isExist = isFileExist(name);
+    if (isExist) {
         mode = "rb+"; 
     }
     else {
@@ -52,11 +51,13 @@ Archive::Archive(std::string name) : archiveName(name) {
     }
     int err = mtar_open(&tar, name.c_str(), mode.c_str());
     freopen(name.c_str(), "rb+", (FILE*)tar.stream);
+    if (isExist) {
+        loadArchive();
+    }
+    root->SetObserver(this);
 }
 
 Archive::~Archive() {
-    // Не обязательно
-    // mtar_finalize(&tar);
     mtar_close(&tar);
 }
 
@@ -68,12 +69,12 @@ void Archive::Print() {
     root->PrintContentRecursive();
 }
 
-void Archive::AddFile(std::string fullname) {
-    root->AddFileRecursive(fullname);
+SFile Archive::AddFile(std::string fullname) {
+    return root->AddFileRecursive(fullname);
 }
 
-void Archive::AddDir(std::string fullname) {
-    root->AddDirRecursive(fullname);
+SDir Archive::AddDir(std::string fullname) {
+    return root->AddDirRecursive(fullname);
 }
 
 SDir Archive::GetDir(std::string fullname) {
@@ -92,14 +93,19 @@ void Archive::loadArchive() {
     mtar_header_t header;
     while (true) {
         int res = mtar_read_header(&tar, &header);
-        if (res == MTAR_ENULLRECORD) {
+        if (res == MTAR_ENULLRECORD || res == MTAR_EREADFAIL) {
             break;
         }
         if (header.type == MTAR_TDIR) {
-            AddDir(header.name);
+            auto dir = AddDir(header.name);
         }
         else if (header.type == MTAR_TREG) {
-            AddFile(header.name);
+            auto file = AddFile(header.name);
+            char *ptr = (char*)calloc(1, header.size + 1);
+            mtar_read_data(&tar, ptr, header.size);
+            file->SetContent(ptr);
+            free(ptr);
+
         }
         mtar_next(&tar);
     }

@@ -6,16 +6,21 @@
 using namespace std;
 
 Dir::Dir(std::string name, Dir *parent) 
-: Node(name, parent) {}
+: Node(name, parent) {
+    SetObserver(&Null::get());
+}
 
 void Dir::Add(SNode node) {
     if (IsNodeExist(node->GetName())) {
-        throw std::invalid_argument("node with this name already exist");
+        throw invalid_argument(
+            "Add(SNode): node with this name already exist"
+        );
     }
     nodes.push_back(node);
     if (node->GetParent() != this) {
         node->SetParent(this);
     }
+    // Возможна оптимизация
     node->SetObserver(observer);
     node->Create();
 }
@@ -42,14 +47,16 @@ size_t Dir::Size() {
     return size;
 }
 
-void Dir::AddFileByName(std::string name) {
-    SFile node = std::make_shared<File>(name);
-    Add(node);
+SFile Dir::AddFileByName(std::string name) {
+    SFile file = std::make_shared<File>(name);
+    Add(file);
+    return file;
 }
 
-void Dir::AddDirByName(std::string name) {
-    SDir node = std::make_shared<Dir>(name);
-    Add(node);
+SDir Dir::AddDirByName(std::string name) {
+    SDir dir = std::make_shared<Dir>(name);
+    Add(dir);
+    return dir;
 }
 
 SNode Dir::GetNodeByName(std::string name) {
@@ -127,7 +134,7 @@ SDir Dir::ProceedPath(std::string fullname) {
             SDir dir = dynamic_pointer_cast<Dir>(node);
             if (!dir) {
                 throw std::invalid_argument(
-                    "file with this name already exist"
+                    "ProceedPath(): file with this name already exist"
                 );
             }
             return dir->ProceedPath(path);
@@ -142,18 +149,18 @@ SDir Dir::ProceedPath(std::string fullname) {
     }
 }
 
-void Dir::AddDirRecursive(std::string fullname) {
+SDir Dir::AddDirRecursive(std::string fullname) {
     auto pos = fullname.rfind('/');
     auto name = fullname.substr(pos + 1);
     auto dir = ProceedPath(fullname);
-    dir->AddDirByName(name);
+    return dir->AddDirByName(name);
 }
 
-void Dir::AddFileRecursive(std::string fullname) {
+SFile Dir::AddFileRecursive(std::string fullname) {
     auto pos = fullname.rfind('/');
     auto name = fullname.substr(pos + 1);
     auto dir = ProceedPath(fullname);
-    dir->AddFileByName(name);
+    return dir->AddFileByName(name);
 }
 
 void Dir::RemoveByNameRecursive(std::string fullname) {
@@ -163,7 +170,7 @@ void Dir::RemoveByNameRecursive(std::string fullname) {
     auto node = dir->GetNodeByName(name);
     if (!node) {
         throw std::invalid_argument(
-            "node with this name dont exist!"
+            "RemoveByNameRecursive(): node with this name dont exist!"
         );
     }
     dir->Remove(node);

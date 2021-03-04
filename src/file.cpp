@@ -2,29 +2,46 @@
 #include <iostream>
 #include <sstream>
 #include "vfs.hpp"
+using namespace std;
 
-File::File(std::string name) : Node(name) {}
+vector<string> split(string str) {
+    vector<string> res;
+    size_t pos = 0;
+    while (true) {
+        auto tmp = str.find('\n', pos);
+        if (tmp == string::npos) {
+            break;
+        }
+        res.push_back(str.substr(pos, tmp - pos));
+        pos = tmp + 1;
+    }
+    return res;
+}
+
+File::File(string name) : Node(name) {
+    SetObserver(&Null::get());
+}
 
 void File::CheckPos(size_t pos) {
     if (pos >= lines.size()) {
-        throw std::invalid_argument("index out of range");
+        throw invalid_argument("index out of range");
     }
 }
 
-std::string& File::Read(size_t pos) {
+string& File::Read(size_t pos) {
     CheckPos(pos);
     return lines[pos];
 }
 
-void File::Insert(size_t pos, std::string str) {
+void File::Insert(size_t pos, string str) {
     if (pos > lines.size()) {
-        throw std::invalid_argument("index out of range");
+        throw invalid_argument("index out of range");
     }
     lines.insert(lines.begin() + pos, str);
     Update();
 }
 
-void File::Push(std::string str) {
+void File::Push(string str) {
     lines.push_back(str);
     Update();
 }
@@ -51,7 +68,11 @@ std::string File::toString() {
     return ss.str();
 }
 
-std::ostream& operator<<(std::ostream& out, const File &file) {
+void File::SetContent(string content) {
+    lines = split(content);
+}
+
+ostream& operator<<(ostream& out, const File &file) {
     size_t last = file.lines.size() - 1;
     for (int i = 0; i < last; i++) {
         out << file.lines[i] << "\n";
