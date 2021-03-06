@@ -3,14 +3,15 @@
 #include "vfs.hpp"
 #include <iostream>
 #include <algorithm>
+#include <utility>
 using namespace std;
 
 Dir::Dir(std::string name, Dir *parent) 
-: Node(name, parent) {
+: Node(std::move(name), parent) {
     SetObserver(&Null::get());
 }
 
-void Dir::Add(SNode node) {
+void Dir::Add(const SNode& node) {
     if (IsNodeExist(node->GetName())) {
         throw invalid_argument(
             "Add(SNode): node with this name already exist"
@@ -25,7 +26,7 @@ void Dir::Add(SNode node) {
     node->Create();
 }
 
-void Dir::Remove(SNode node) {
+void Dir::Remove(const SNode& node) {
     auto it = std::find(nodes.begin(), nodes.end(), node);
     if (it == nodes.end()) {
         return;
@@ -47,19 +48,19 @@ size_t Dir::Size() {
     return size;
 }
 
-SFile Dir::AddFileByName(std::string name) {
+SFile Dir::AddFileByName(const std::string& name) {
     SFile file = std::make_shared<File>(name);
     Add(file);
     return file;
 }
 
-SDir Dir::AddDirByName(std::string name) {
+SDir Dir::AddDirByName(const std::string& name) {
     SDir dir = std::make_shared<Dir>(name);
     Add(dir);
     return dir;
 }
 
-SNode Dir::GetNodeByName(std::string name) {
+SNode Dir::GetNodeByName(const std::string& name) {
     for (auto &node : nodes) {
         if (node->GetName() == name) {
             return node;
@@ -68,34 +69,34 @@ SNode Dir::GetNodeByName(std::string name) {
     return nullptr;
 }
 
-SDir Dir::GetDirByName(std::string name) {
+SDir Dir::GetDirByName(const std::string& name) {
     SNode node = GetNodeByName(name);
     return std::dynamic_pointer_cast<Dir>(node);
 }
 
-SFile Dir::GeFileByName(std::string name) {
+SFile Dir::GeFileByName(const std::string& name) {
     SNode node = GetNodeByName(name);
     return std::dynamic_pointer_cast<File>(node);
 }
 
-SNode Dir::GetNodeByNameRecursive(std::string fullname) {
+SNode Dir::GetNodeByNameRecursive(const std::string& fullname) {
     auto pos = fullname.rfind('/');
     auto name = fullname.substr(pos + 1);
     auto dir = ProceedPath(fullname);
     return dir->GetNodeByName(name);
 }
 
-SDir Dir::GetDirByNameRecursive(std::string fullname) {
+SDir Dir::GetDirByNameRecursive(const std::string& fullname) {
     SNode node = GetNodeByNameRecursive(fullname);
     return dynamic_pointer_cast<Dir>(node);
 }
 
-SFile Dir::GeFileByNameRecursive(std::string fullname) {
+SFile Dir::GeFileByNameRecursive(const std::string& fullname) {
     SNode node = GetNodeByNameRecursive(fullname);
     return dynamic_pointer_cast<File>(node);
 }
 
-bool Dir::IsNodeExist(std::string name) {
+bool Dir::IsNodeExist(const std::string& name) {
     for (auto &node : nodes) {
         if (node->GetName() == name) {
             return true;
@@ -104,7 +105,7 @@ bool Dir::IsNodeExist(std::string name) {
     return false;
 }
 
-bool Dir::IsNodeExist(SNode node) {
+bool Dir::IsNodeExist(const SNode& node) {
     return IsNodeExist(node->GetName());
 }
 
@@ -124,7 +125,7 @@ void Dir::PrintContentRecursive() {
     }
 }
 
-SDir Dir::ProceedPath(std::string fullname) {
+SDir Dir::ProceedPath(const std::string& fullname) {
     auto pos = fullname.find('/');
     auto name = fullname.substr(0, pos);
     if (pos != string::npos) {
@@ -149,21 +150,21 @@ SDir Dir::ProceedPath(std::string fullname) {
     }
 }
 
-SDir Dir::AddDirRecursive(std::string fullname) {
+SDir Dir::AddDirRecursive(const std::string& fullname) {
     auto pos = fullname.rfind('/');
     auto name = fullname.substr(pos + 1);
     auto dir = ProceedPath(fullname);
     return dir->AddDirByName(name);
 }
 
-SFile Dir::AddFileRecursive(std::string fullname) {
+SFile Dir::AddFileRecursive(const std::string& fullname) {
     auto pos = fullname.rfind('/');
     auto name = fullname.substr(pos + 1);
     auto dir = ProceedPath(fullname);
     return dir->AddFileByName(name);
 }
 
-void Dir::RemoveByNameRecursive(std::string fullname) {
+void Dir::RemoveByNameRecursive(const std::string& fullname) {
     auto pos = fullname.rfind('/');
     auto name = fullname.substr(pos + 1);
     auto dir = ProceedPath(fullname);

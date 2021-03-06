@@ -1,14 +1,15 @@
 #include "node.hpp"
 #include "dir.hpp"
-#include <iostream>
 #include "vfs.hpp"
+#include <iostream>
+#include <utility>
 
-void IObservable::SetObserver(IObserver *observer) {
-    this->observer = observer;
+void IObservable::SetObserver(IObserver *obs) {
+    this->observer = obs;
 }
 
 Node::Node(std::string name, Dir *parent) 
-: name(name), parent(nullptr) {
+: m_name(std::move(name)), parent(nullptr) {
     SetParent(parent);
 }
 
@@ -34,17 +35,17 @@ Dir* Node::GetParent() {
 }
 
 void Node::SetName(std::string name) {
-    this->name = name;
+    m_name = std::move(name);
     Update();
 }
 
 std::string Node::GetName() {
-    return name;
+    return m_name;
 }
 
 std::string Node::GetFullName() {
     if (parent) {
-        return parent->GetFullName() + "/" + name;
+        return parent->GetFullName() + "/" + m_name;
     }
     return GetName();
 }

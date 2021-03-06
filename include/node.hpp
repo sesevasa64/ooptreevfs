@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <memory>
-#include <functional>
 
 class Dir;
 class Node;
@@ -21,15 +20,15 @@ protected:
 
 class Node : public IObservable, public std::enable_shared_from_this<Node> {
 public:
-    Node(std::string name, Dir *parent = {});
+    explicit Node(std::string name, Dir *parent = {});
     virtual size_t Size() = 0;
     void SetParent(Dir *parent);
     Dir* GetParent();
     void SetName(std::string name);
     std::string GetName();
     std::string GetFullName();
-    virtual ~Node() {}
+    virtual ~Node() = default;
 private:
-    std::string name;
+    std::string m_name;
     Dir *parent;
 };

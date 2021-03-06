@@ -9,23 +9,23 @@ using SDir = std::shared_ptr<Dir>;
 
 class Dir : public Node {
 public:
-    Dir(std::string name, Dir *parent = {});
-    void Add(SNode node);
-    void Remove(SNode node);
-    SFile AddFileByName(std::string name);
-    SDir  AddDirByName(std::string name);
-    SDir  AddDirRecursive(std::string fullname);
-    SFile AddFileRecursive(std::string fullname);
-    void RemoveByName(std::string name);
-    void RemoveByNameRecursive(std::string fullname);
-    SNode GetNodeByName(std::string name);
-    SNode GetNodeByNameRecursive(std::string fullname);
-    SDir  GetDirByName(std::string name);
-    SDir  GetDirByNameRecursive(std::string fullname);
-    SFile GeFileByName(std::string name);
-    SFile GeFileByNameRecursive(std::string fullname);
-    bool IsNodeExist(std::string name);
-    bool IsNodeExist(SNode node);
+    explicit Dir(std::string name, Dir *parent = {});
+    void Add(const SNode& node);
+    void Remove(const SNode& node);
+    SFile AddFileByName(const std::string &name);
+    SDir  AddDirByName(const std::string &name);
+    SDir  AddDirRecursive(const std::string& fullname);
+    SFile AddFileRecursive(const std::string& fullname);
+    //void RemoveByName(std::string name);
+    void RemoveByNameRecursive(const std::string& fullname);
+    SNode GetNodeByName(const std::string& name);
+    SNode GetNodeByNameRecursive(const std::string& fullname);
+    SDir  GetDirByName(const std::string& name);
+    SDir  GetDirByNameRecursive(const std::string& fullname);
+    SFile GeFileByName(const std::string& name);
+    SFile GeFileByNameRecursive(const std::string& fullname);
+    bool IsNodeExist(const std::string& name);
+    bool IsNodeExist(const SNode& node);
     void PrintContent();
     void PrintContentRecursive();
     size_t Count();
@@ -37,6 +37,6 @@ public:
     SDirIt end() { return nodes.end(); }
     void SetObserver(IObserver *observer) override;
 private:
-    SDir ProceedPath(std::string fullname);
+    SDir ProceedPath(const std::string& fullname);
     SNodes nodes;
 };

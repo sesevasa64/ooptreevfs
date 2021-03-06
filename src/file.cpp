@@ -4,7 +4,7 @@
 #include "vfs.hpp"
 using namespace std;
 
-vector<string> split(string str) {
+vector<string> split(const string& str) {
     vector<string> res;
     size_t pos = 0;
     while (true) {
@@ -18,30 +18,46 @@ vector<string> split(string str) {
     return res;
 }
 
-File::File(string name) : Node(name) {
+Proxy::Proxy(File *file, string *ptr) : file(file), ptr(ptr) {}
+
+void Proxy::operator=(string str) {
+    *ptr = std::move(str);
+    file->Update();
+}
+
+void Proxy::operator+=(const string& str) {
+    *ptr += str;
+    file->Update();
+}
+
+File::File(string name) : Node(std::move(name)) {
     SetObserver(&Null::get());
 }
 
 void File::CheckPos(size_t pos) {
     if (pos >= lines.size()) {
-        throw invalid_argument("index out of range");
+        throw invalid_argument("CheckPos(): index out of range");
     }
 }
 
-string& File::Read(size_t pos) {
-    CheckPos(pos);
-    return lines[pos];
+Proxy File::Line(size_t pos) {
+    return (*this)[pos];
 }
 
-void File::Insert(size_t pos, string str) {
+Proxy File::operator[](size_t pos) {
+    CheckPos(pos);
+    return {this, &lines[pos]};
+}
+
+void File::Insert(size_t pos, const string& str) {
     if (pos > lines.size()) {
-        throw invalid_argument("index out of range");
+        throw invalid_argument("Insert(): index out of range");
     }
     lines.insert(lines.begin() + pos, str);
     Update();
 }
 
-void File::Push(string str) {
+void File::Push(const string& str) {
     lines.push_back(str);
     Update();
 }
@@ -68,7 +84,7 @@ std::string File::toString() {
     return ss.str();
 }
 
-void File::SetContent(string content) {
+void File::SetContent(const string& content) {
     lines = split(content);
 }
 
@@ -78,6 +94,10 @@ ostream& operator<<(ostream& out, const File &file) {
         out << file.lines[i] << "\n";
     }
     return out << file.lines[last];
+}
+
+ostream& operator<<(ostream& out, const SFile& file) {
+    return out << *file;
 }
 
 void File::Create() {

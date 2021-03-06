@@ -83,6 +83,8 @@ int mtar_write_dir_header(mtar_t *tar, const char *name);
 int mtar_write_data(mtar_t *tar, const void *data, unsigned size);
 int mtar_finalize(mtar_t *tar);
 
+void mtar_delete_header(mtar_t *tar, const char *archiveName, const char *headerName);
+
 #ifdef __cplusplus
 }
 #endif

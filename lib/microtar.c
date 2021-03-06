@@ -376,3 +376,34 @@ int mtar_finalize(mtar_t *tar) {
   /* Write two NULL records */
   return write_null_bytes(tar, sizeof(mtar_raw_header_t) * 2);
 }
+
+void mtar_delete_header(mtar_t *tar, const char *archiveName, const char *headerName) {
+    const int size = 512;
+    char buf[size];
+    char *tmp = "tmp.tar";
+    mtar_header_t header;
+    int error = mtar_find(tar, headerName, &header);
+    if (error != 0) {
+        return;
+    }
+    int header_pos = tar->pos;
+    FILE *cur_file = (FILE*)tar->stream;
+    FILE *tmp_file = fopen(tmp, "wb+");
+    fseek(cur_file, 0, SEEK_SET);
+    while (1) {
+        fread(buf, size, 1, cur_file);
+        if (feof(cur_file)) {
+            break;
+        }
+        if (ftell(cur_file) - size != header_pos ) {
+            fwrite(buf, size, 1, tmp_file);
+        }
+    }
+    error = fclose(cur_file);
+    error = remove(archiveName);
+    error = fclose(tmp_file);
+    error = rename(tmp, archiveName);
+    tar->stream = fopen(archiveName, "rb+");
+    // На всякий случай
+    error = mtar_seek(tar, header_pos);
+}

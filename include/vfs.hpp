@@ -15,12 +15,13 @@ public:
 
 class Archive : public IObserver {
 public:
-    Archive(std::string name);
-    SFile AddFile(std::string fullname);
-    SDir  AddDir(std::string fullname);
-    SDir  GetDir(std::string fullname);
-    SFile GetFile(std::string fullname);
-    void RemoveRecursive(std::string fullname);
+    explicit Archive(const std::string& name);
+    void Add(const SNode& node);
+    SFile AddFile(const std::string& fullname);
+    SDir  AddDir(const std::string& fullname);
+    SDir  GetDir(const std::string& fullname);
+    SFile GetFile(const std::string& fullname);
+    void RemoveRecursive(const std::string& fullname);
     SDir getRoot();
     void Print();
     ~Archive();
@@ -52,5 +53,5 @@ public:
         return obs;
     }
 private:
-    Null() {}
+    Null() = default;
 };

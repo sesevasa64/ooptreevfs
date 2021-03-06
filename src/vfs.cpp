@@ -2,45 +2,13 @@
 #include <fstream>
 #include <iostream>
 using namespace std;
-using namespace placeholders;
 
-inline bool isFileExist(const std::string& name) {
+inline bool isFileExist(const string& name) {
     ifstream f(name);
     return f.good();
 }
 
-void mtar_delete_header(mtar_t *tar, string archiveName, const char *headerName) {
-    const int size = 512;
-    char buf[size];
-    string tmp = "tmp.tar";
-    mtar_header_t header;
-    int error = mtar_find(tar, headerName, &header);
-    if (error != 0) {
-        return;
-    }
-    int header_pos = tar->pos;
-    FILE *cur_file = (FILE*)tar->stream;
-    FILE *tmp_file = fopen(tmp.c_str(), "wb+");
-    fseek(cur_file, 0, SEEK_SET);
-    while (true) {
-        fread(buf, size, 1, cur_file);
-        if (feof(cur_file)) {
-            break;
-        }
-        if (ftell(cur_file) - size != header_pos ) {
-            fwrite(buf, size, 1, tmp_file);
-        }
-    }
-    error = fclose(cur_file);
-    error = remove(archiveName.c_str());
-    error = fclose(tmp_file);
-    error = rename(tmp.c_str(), archiveName.c_str());
-    tar->stream = fopen(archiveName.c_str(), "rb+");
-    // На всякий случай
-    error = mtar_seek(tar, header_pos);
-}
-
-Archive::Archive(std::string name) : archiveName(name) {
+Archive::Archive(const std::string& name) : archiveName(name) {
     root = make_shared<Dir>(string());
     bool isExist = isFileExist(name);
     if (isExist) {
@@ -69,23 +37,27 @@ void Archive::Print() {
     root->PrintContentRecursive();
 }
 
-SFile Archive::AddFile(std::string fullname) {
+void Archive::Add(const SNode& node) {
+    root->Add(node);
+}
+
+SFile Archive::AddFile(const std::string& fullname) {
     return root->AddFileRecursive(fullname);
 }
 
-SDir Archive::AddDir(std::string fullname) {
+SDir Archive::AddDir(const std::string& fullname) {
     return root->AddDirRecursive(fullname);
 }
 
-SDir Archive::GetDir(std::string fullname) {
+SDir Archive::GetDir(const std::string& fullname) {
     return root->GetDirByNameRecursive(fullname);
 }
     
-SFile Archive::GetFile(std::string fullname) {
+SFile Archive::GetFile(const std::string& fullname) {
     return root->GeFileByNameRecursive(fullname);
 }
 
-void Archive::RemoveRecursive(std::string fullname) {
+void Archive::RemoveRecursive(const std::string& fullname) {
     root->RemoveByNameRecursive(fullname);
 }
 
@@ -128,7 +100,7 @@ void Archive::Remove(Dir *dir) {
     string name = dir->GetFullName();
     cout << "onRemove = " << name << endl;
     const char *fname = name.c_str();
-    mtar_delete_header(&tar, archiveName, fname + 1);
+    mtar_delete_header(&tar, archiveName.c_str(), fname + 1);
 }
 
 void Archive::Remove(File *file) {
@@ -136,7 +108,7 @@ void Archive::Remove(File *file) {
     string name = file->GetFullName();
     cout << "onRemove = " << name << endl;
     const char *fname = name.c_str();
-    mtar_delete_header(&tar, archiveName, fname + 1);
+    mtar_delete_header(&tar, archiveName.c_str(), fname + 1);
 }
 
 void Archive::Update(Node *node) {
